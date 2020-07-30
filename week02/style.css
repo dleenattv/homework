@@ -1,0 +1,53 @@
+body {
+  font-family: 'Nanum Myeongjo', serif;
+  color: #3d3d3d;
+}
+
+.subtitle-eng {
+  font-family: "Inconsolata", monosapce;
+}
+
+.subtitle {
+  font-family: 'Nanum Myeongjo', serif;
+  font-family: 'Noto Sans KR', sans-serif;
+  display: inline-block;
+  margin-bottom: 15px;
+}
+
+.img-box {
+  padding-left: 45px;
+}
+
+.container {
+  border: #cccccc solid 1px;
+  padding: 20px 10px 20px 10px;
+  margin: 20px auto;
+  width: 900px;
+
+}
+
+.productMain {
+  margin: auto;
+  width: 800px;
+}
+
+.im20 {
+   margin: 20px 20px 20px 20px;
+}
+
+.im-t20 {
+   margin: 20px 0px 0px 0px;
+}
+
+.im-b20 {
+   margin: 0px 0px 20px 0px;
+}
+
+.title h1,
+.title h5 {
+  display: inline;
+}
+
+.title {
+  align-content: center;
+}
