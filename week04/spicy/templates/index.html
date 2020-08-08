@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Document</title>
+
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@700&family=Nanum+Myeongjo:wght@700&family=Noto+Sans+KR:wght@700&display=swap"
+              rel="stylesheet">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+              integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+              crossorigin="anonymous">
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <!-- Template Main CSS File -->
+        <!--<link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">-->
+        <link href="../static/css/style.css" rel="stylesheet">
+
+        <script type="text/javascript">
+            let exchangeRate = "";
+
+            $(document).ready(function () {
+                showExchangeInfo();
+                $("#order-list").html();
+                showOrders();
+            });
+
+            window.onbeforeunload = function () {
+                window.scrollTo(0, 0);
+            }
+
+            function showExchangeInfo() {
+                $.ajax({
+                    type: "GET",
+                    url: "https://api.manana.kr/exchange/rate.json",
+                    data: {},
+                    success: function (data) {
+                        for (let i = 0; i < data.length; i++) {
+                            if (data[i].name == "USDKRW=X") {
+                                exchangeRate = data[i].rate;
+                                $("#exchangeBox").append(exchangeRate);
+                            }
+                        }
+                    }
+                })
+            }
+
+            function order() {
+                let orderInfo = {
+                    orderName: $("#orderName").val(),
+                    orderCount: $("#orderCount option:selected").val(),
+                    orderAddr: $("#orderAddr").val(),
+                    orderTel: $("#orderTel").val()
+                }
+
+                if (formCheck(orderInfo)) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/order",
+                        data: {
+                            'send_name': orderInfo.orderName,
+                            'send_count': orderInfo.orderCount,
+                            'send_addr': orderInfo.orderAddr,
+                            'send_tel': orderInfo.orderTel
+                        },
+                        success: function (response) {
+                            if (response.result == "success") {
+                                alert("주문이 완료되었습니다.");
+                                window.location.reload();
+                            } else {
+                                alert("주문에 실패했습니다.");
+                            }
+                        }
+                    })
+                }
+            }
+
+            function showOrders() {
+                $.ajax({
+                    type: "GET",
+                    url: "/order",
+                    data: {},
+                    success: function (response) {
+                        let orderList = response['orders'];
+                        if (orderList.length > 0) {
+                            for (let i = orderList.length - 1; i >= 0; i--) {
+                                makeOrderList(orderList[i].orderName, orderList[i].orderCount, orderList[i].orderAddr, orderList[i].orderTel);
+                            }
+                        }
+                    }
+                })
+            }
+
+            function makeOrderList(name, count, addr, tel) {
+                let tmpHtml = `<tr>
+                               <td>${name}</td>
+                               <td>${count}</td>
+                               <td>${addr}</td>
+                               <td>${tel}</td>
+                               </tr>`
+                $("#order-list").append(tmpHtml);
+            }
+
+            function formCheck(obj) {
+                if (!obj.orderName) {
+                    alert("주문자 성함을 입력하세요.");
+                    $("#orderName").focus();
+                    return false;
+                } else if (!isName($("#orderName").val())) {
+                    alert("주문자 성함을 확인하세요.");
+                    $("#orderName").val("");
+                    $("#orderName").focus();
+                    return false;
+                } else if (!obj.orderCount) {
+                    alert("수량을 선택하세요.");
+                    $("#orderCount").focus();
+                    return false;
+                } else if (!obj.orderAddr) {
+                    alert("주소를 입력하세요.");
+                    $("#orderAddr").focus();
+                    return false;
+                } else if (!obj.orderTel) {
+                    alert("연락처를 입력하세요.");
+                    $("#orderTel").focus();
+                    return false;
+                } else if (!isMobile($("#orderTel").val())) {
+                    alert("전화번호가 올바른 형식이 아닙니다. 다시 입력하세요.");
+                    $("#orderTel").val("");
+                    $("#orderTel").focus();
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            function isMobile(num) {
+                let regExp = /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})-?[0-9]{3,4}-?[0-9]{4}$/
+                return regExp.test(num);
+            }
+
+            function isName(str) {
+                let regExp = /^[가-힣a-zA-Z0-9]{2,10}$/
+                return regExp.test(str);
+            }
+        </script>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="productMain">
+                <div class="img-box im-b20">
+                    <img src="https://t1.daumcdn.net/cfile/tistory/22756F3952E144BA23">
+                </div>
+                <div class="im-b20 title">
+                    <h2 style="margin-right: 20px"><span
+                            class="subtitle-eng">Jo Malone English Pear & Freesia</span></h2>
+                    <h5>가격 100,000 원 / 개</h5>
+                    <div class="exchangeRate im-t20">
+                        <button type="button" class="btn btn-outline-secondary" id="exchangeBox" disabled>달러-원 환율 :
+                        </button>
+                    </div>
+                    <hr>
+                    <p>용량: 100ml<br>출시연도: 2010<br>계열: 프루티<br>테이스팅 노트: 킹
+                        윌리엄 페어, 프리지아, 파출리<br><br>
+                        은은하면서 신선하고 감미로운 향<br>
+                        부드럽고 감미로운 향을 부여하는 잉글리쉬 페어 앤 프리지아는 가을의 정수라 할 수 있습니다.<br>
+                        화이트 프리지아 부케향에 이제 막 익은 배의 신선함을 입히고, 호박, 파출리, 우디향으로 은은함을 더했습니다.<br>
+                        감미롭고 특별한 향이 느껴집니다.</p>
+                </div>
+                <hr>
+                <h2 style="margin-right: 20px" class="im-b20">주문하기</h2>
+                <div class="im-b20 input-group input-group-lg">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" style="width: 140px">주문자 성함</span>
+                    </div>
+                    <input type="text" class="form-control" aria-label="Large"
+                           aria-describedby="inputGroup-sizing-lg"
+                           id="orderName" name="orderName">
+                </div>
+                <div class="im-b20 input-group input-group-lg">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" for="inputGroupSelect01" style="width: 140px">수　　　량</span>
+                    </div>
+                    <select class="custom-select form-control" id="orderCount" name="orderCount">
+                        <option selected value="">선택</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </div>
+                <div class="im-b20 input-group input-group-lg">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" style="width: 140px">주　　　소</span>
+                    </div>
+                    <input type="text" class="form-control" id="orderAddr" name="orderAddr">
+                </div>
+                <div class="im-b20 input-group input-group-lg">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" style="width: 140px; letter-spacing: 7px">전화번호</span>
+                    </div>
+                    <input type="text" class="form-control" id="orderTel" name="orderTel" placeholder="(예) 01012341234">
+                </div>
+
+                <button type="button" class="btn btn-secondary btn-block im-b20 btn-lg" onclick="order()">주문하기
+                </button>
+            </div>
+            <hr>
+            <div class="table">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col" class="text-center">주문자명</th>
+                        <th scope="col" class="text-center">수량</th>
+                        <th scope="col" class="text-center">주소</th>
+                        <th scope="col" class="text-center">전화번호</th>
+                    </tr>
+                    </thead>
+                    <tbody id="order-list">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>
