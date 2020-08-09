@@ -19,7 +19,7 @@ def homework():
 def save_order():
     recv_name = request.form['send_name']
     recv_count = request.form['send_count']
-    recv_addr = request.form['send_count']
+    recv_addr = request.form['send_addr']
     recv_tel = request.form['send_tel']
 
     send_info = {
